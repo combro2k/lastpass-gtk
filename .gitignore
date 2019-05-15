@@ -1,0 +1,3 @@
+/dist/*
+/lastpass-gtk/__pycache__/
+/.idea/*
