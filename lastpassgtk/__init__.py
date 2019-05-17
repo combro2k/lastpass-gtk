@@ -50,7 +50,8 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
             entries_model.append(entry)
 
         completions_model = Gtk.EntryCompletion(
-            model=entries_model
+            model=entries_model,
+            inline_completion=True,
         )
         completions_model.set_text_column(0)
 
