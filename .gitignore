@@ -1,3 +1,4 @@
 /dist/*
-/lastpass-gtk/__pycache__/
+/lastpassgtk/__pycache__/
+/lastpassgtk.egg-info/
 /.idea/*
