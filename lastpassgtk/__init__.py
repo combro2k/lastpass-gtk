@@ -53,6 +53,10 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
             model=entries_model,
             inline_completion=True,
         )
+
+        # WIP
+#        completions_model.set_match_func(self.match_func)
+
         completions_model.set_text_column(0)
 
         self.selection = Gtk.ComboBox(
@@ -96,6 +100,10 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
             wrap_mode=True,
             monospace=True,
         )
+
+    def match_func(self, widget, text, tree):
+        print(tree, text)
+
 
     def _key_press_event(self, widget, event):
         if isinstance(widget, LastPassGTKWindow) and Gdk.keyval_name(event.keyval) == 'Escape':
