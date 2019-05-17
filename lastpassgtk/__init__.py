@@ -38,7 +38,7 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_accept_focus(True)
         self.stick()
-        self.resize(600, 150)
+        self.resize(800, 150)
 
         self.set_border_width(20)
         self.set_mnemonics_visible(True)
@@ -58,7 +58,7 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
             visible=True,
             has_entry=True,
             model=entries_model,
-            entry_text_column=-0,
+            entry_text_column=0,
             id_column=1,
         )
         self.selection.get_child().set_completion(completions_model)
@@ -89,12 +89,11 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
             selectable=True,
             xalign=0,
         )
-        self.note = Gtk.Label(
-            label='Note: ',
+        self.note = Gtk.TextView(
             visible=True,
-            use_markup=True,
-            selectable=True,
-            xalign=0,
+            editable=False,
+            wrap_mode=True,
+            monospace=True,
         )
 
     def _key_press_event(self, widget, event):
@@ -156,39 +155,47 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
             self.password.set_label(
                 f"Password: {data['password']}"
             )
-            self.note.set_label(
-                f"{data['note']}"
-            )
 
+            self.note.get_buffer().set_text(data['note'])
+            
     def present(self):
-
-
         vbox = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL,
-            spacing=1,
+            spacing=5,
             visible=True,
         )
 
         vbox.pack_start(self.selection, True, True, 0)
 
-        vbox.pack_start(self.name, True, True, 2)
-        vbox.pack_start(self.url, True, True, 2)
-        vbox.pack_start(self.username, True, True, 2)
-        vbox.pack_start(self.password, True, True, 2)
+        vbox.pack_start(self.name, True, True, 0)
+        vbox.pack_start(self.url, True, True, 0)
+        vbox.pack_start(self.username, True, True, 0)
+        vbox.pack_start(self.password, True, True, 0)
         vbox.pack_start(
             Gtk.Label(
                 label='Note',
                 visible=True,
                 xalign=0,
-            ), True, True, 0)
-
+            ), False, False, 0)
         nbox = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL,
-            spacing=15,
+            spacing=0,
             visible=True,
-            border_width=0,
+            border_width=10,
         )
-        nbox.pack_start(self.note, True, True, 0)
+#        nbox.pack_start(self.note, True, True, 0)
+
+        scrolledwindow = Gtk.ScrolledWindow(
+            visible=True,
+            hexpand=True,
+            vexpand=True,
+            min_content_height=320
+        )
+        scrolledwindow.set_hexpand(True)
+        scrolledwindow.set_vexpand(True)
+        scrolledwindow.add(self.note)
+
+        nbox.pack_start(scrolledwindow, True, True, 0)
 
         vbox.pack_start(nbox, True, True, 0)
 
