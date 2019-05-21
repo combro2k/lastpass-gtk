@@ -11,7 +11,6 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 
-from libqtile.command import Client
 from os.path import expanduser
 from gi.repository import (
     Gio,
@@ -23,8 +22,6 @@ from gi.repository import (
 class LastPassGTKWindow(Gtk.ApplicationWindow):
     _history_file = expanduser('~/.rdp_history')
 
-    qtile = None
-
     selection = None
 
     _entries = []
@@ -34,7 +31,6 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
 
         if 'application' in kwargs:
             self.application = kwargs['application']
-            self.qtile = self.application.qtile
 
         self.set_role('lastpass-gtk3')
         self.set_type_hint(Gdk.WindowTypeHint.TOOLBAR)
@@ -226,31 +222,19 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
 
 
 class LastPassGTK(Gtk.Application):
-    _qtile = None
 
-    def __init__(self, qtile=None):
+    def __init__(self):
         Gtk.Application.__init__(
             self,
             application_id="org.lastpass.gtk",
             flags=Gio.ApplicationFlags.FLAGS_NONE,
         )
 
-        if qtile is not None:
-            self._qtile = qtile
-
         self.window = None
 
     def do_activate(self):
         window = LastPassGTKWindow(application=self, title="LastPass RDP")
         window.present()
-
-    @property
-    def qtile(self):
-        if self._qtile is None:
-            self._qtile = Client()
-
-        return self._qtile
-
 
 if __name__ == "__main__":
     app = LastPassGTK()
