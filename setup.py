@@ -11,7 +11,7 @@ setup(
     entry_points = {
         'console_scripts': ['lastpass-gtk=lastpassgtk.lastpassgtk:main'],
     },
-    install_reuires=[
+    install_requires=[
         'gtk3',
         'zenipy',
     ],
