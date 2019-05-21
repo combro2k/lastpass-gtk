@@ -2,6 +2,9 @@
 import json
 import re
 import sys
+import os
+import zenipy
+
 from subprocess import PIPE, run
 
 import gi
@@ -44,62 +47,6 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
         self.set_mnemonics_visible(True)
 
         self.connect('key-press-event', self._key_press_event)
-
-        entries_model = Gtk.ListStore(str, str)
-        for entry in self.entries:
-            entries_model.append(entry)
-
-        completions_model = Gtk.EntryCompletion(
-            model=entries_model,
-            inline_completion=True,
-        )
-
-        # WIP
-#        completions_model.set_match_func(self.match_func)
-
-        completions_model.set_text_column(0)
-
-        self.selection = Gtk.ComboBox(
-            visible=True,
-            has_entry=True,
-            model=entries_model,
-            entry_text_column=0,
-            id_column=1,
-        )
-        self.selection.get_child().set_completion(completions_model)
-        self.selection.connect('changed', self.show_selection)
-
-        self.name = Gtk.Label(
-            label='Name: ',
-            visible=True,
-            selectable=True,
-            xalign=0,
-        )
-        self.url = Gtk.Label(
-            label='URL: ',
-            visible=True,
-            use_markup=True,
-            selectable=True,
-            xalign=0,
-        )
-        self.username = Gtk.Label(
-            label='Username: ',
-            visible=True,
-            selectable=True,
-            xalign=0,
-        )
-        self.password = Gtk.Label(
-            label='Password: ',
-            visible=True,
-            selectable=True,
-            xalign=0,
-        )
-        self.note = Gtk.TextView(
-            visible=True,
-            editable=False,
-            wrap_mode=True,
-            monospace=True,
-        )
 
     def match_func(self, widget, text, tree):
         print(tree, text)
@@ -166,7 +113,19 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
             )
 
             self.note.get_buffer().set_text(data['note'])
-            
+
+    @property
+    def loggedin(self):
+        cmd = run(['/usr/bin/lpass', 'status'], stdout=open(os.devnull, 'w'))
+
+        return True if cmd.returncode == 0 else False
+
+    def login(self):
+        username = zenipy.zenipy.entry(text='Please login with emailadres', placeholder='', title='', width=330, height=120, timeout=None)
+        cmd = run(['/usr/bin/lpass', 'login', username])
+
+        return True if cmd.returncode == 0 else False
+
     def present(self):
         vbox = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL,
@@ -174,8 +133,63 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
             visible=True,
         )
 
-        vbox.pack_start(self.selection, True, True, 0)
+        if not self.loggedin:
+            self.loggedin = self.login() 
 
+        entries_model = Gtk.ListStore(str, str)
+        for entry in self.entries:
+            entries_model.append(entry)
+
+        completions_model = Gtk.EntryCompletion(
+            model=entries_model,
+            inline_completion=True,
+        )
+
+        completions_model.set_text_column(0)
+        
+        self.selection = Gtk.ComboBox(
+            visible=True,
+            has_entry=True,
+            model=entries_model,
+            entry_text_column=0,
+            id_column=1,
+        )
+        self.selection.get_child().set_completion(completions_model)
+        self.selection.connect('changed', self.show_selection)
+
+        self.name = Gtk.Label(
+            label='Name: ',
+            visible=True,
+            selectable=True,
+            xalign=0,
+        )
+        self.url = Gtk.Label(
+            label='URL: ',
+            visible=True,
+            use_markup=True,
+            selectable=True,
+            xalign=0,
+        )
+        self.username = Gtk.Label(
+            label='Username: ',
+            visible=True,
+            selectable=True,
+            xalign=0,
+        )
+        self.password = Gtk.Label(
+            label='Password: ',
+            visible=True,
+            selectable=True,
+            xalign=0,
+        )
+        self.note = Gtk.TextView(
+            visible=True,
+            editable=False,
+            wrap_mode=True,
+            monospace=True,
+        )
+
+        vbox.pack_start(self.selection, True, True, 0)
         vbox.pack_start(self.name, True, True, 0)
         vbox.pack_start(self.url, True, True, 0)
         vbox.pack_start(self.username, True, True, 0)
@@ -186,14 +200,6 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
                 visible=True,
                 xalign=0,
             ), False, False, 0)
-        nbox = Gtk.Box(
-            orientation=Gtk.Orientation.VERTICAL,
-            spacing=0,
-            visible=True,
-            border_width=10,
-        )
-#        nbox.pack_start(self.note, True, True, 0)
-
         scrolledwindow = Gtk.ScrolledWindow(
             visible=True,
             hexpand=True,
@@ -204,6 +210,12 @@ class LastPassGTKWindow(Gtk.ApplicationWindow):
         scrolledwindow.set_vexpand(True)
         scrolledwindow.add(self.note)
 
+        nbox = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=0,
+            visible=True,
+            border_width=10,
+        )
         nbox.pack_start(scrolledwindow, True, True, 0)
 
         vbox.pack_start(nbox, True, True, 0)
